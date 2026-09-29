@@ -70,7 +70,9 @@ npm run build
    `checkout.session.async_payment_succeeded`), and set `STRIPE_WEBHOOK_SECRET`.
    Locally: `stripe listen --forward-to localhost:3000/api/stripe/webhook`.
 3. Set `NEXT_PUBLIC_APP_URL` to the public URL so Stripe redirects back correctly.
-4. Price and currency come from `PRO_REPORT_PRICE_CENTS` and `PRO_REPORT_CURRENCY`.
+4. Price and currency come from `PRO_REPORT_PRICE_CENTS` and `PRO_REPORT_CURRENCY`
+   (default 79900 + inr, shown as ₹799). Stripe must support charging in that
+   currency for your account country; INR works on Indian Stripe accounts.
 
 The success URL also verifies the Checkout session directly with Stripe, so reports
 unlock even if the webhook is late or not yet configured.
