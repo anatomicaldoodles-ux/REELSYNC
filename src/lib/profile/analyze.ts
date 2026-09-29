@@ -297,7 +297,9 @@ export function analyzeProfile(profile: PublicProfile, options: AnalyzeOptions =
     recs.push({ title: "Carousels are working", detail: `Carousels beat single images by ${content.carouselVsImageEngagementPct}%. Turn tips, steps and before/after into multi-slide posts.`, impact: "medium" });
   }
   if (timing.bestWeekday !== undefined && timing.bestHour !== undefined) {
-    recs.push({ title: `Best slot: ${WEEKDAY_NAMES[timing.bestWeekday]} around ${timing.bestHour}:00`, detail: `Posts published in this slot average the most engagement. Schedule your strongest content there (${clock.timeZone} time).`, impact: "medium" });
+    const h = timing.bestHour;
+    const hourLabel = h === 0 ? "12am" : h < 12 ? `${h}am` : h === 12 ? "12pm" : `${h - 12}pm`;
+    recs.push({ title: `Best slot: ${WEEKDAY_NAMES[timing.bestWeekday]} around ${hourLabel}`, detail: `Posts published in this slot average the most engagement. Schedule your strongest content there (${clock.timeZone} time).`, impact: "medium" });
   }
   if (postsPerWeek !== undefined && postsPerWeek < 2) {
     recs.push({ title: "Post more often", detail: `${postsPerWeek} posts per week is below the 3 to 5 that keeps most accounts in the algorithm's rotation.`, impact: "high" });

@@ -55,8 +55,13 @@ export default async function ReportPage({ params }: PageProps<"/report/[id]">) 
       </div>
 
       {report.tier === "pro" && (
-        <div className="mt-6 card p-4 text-sm text-muted">
-          Your full report is unlocked. Bookmark this page to come back to it: <span className="font-medium text-foreground">{env.appUrl}/report/{id}</span>
+        <div className="mt-6 card p-4 text-sm text-muted flex flex-wrap items-center justify-between gap-3">
+          <span>
+            Your full report is unlocked. Bookmark this page to come back to it: <span className="font-medium text-foreground">{env.appUrl}/report/{id}</span>
+          </span>
+          <a href={`/api/reports/${id}/pdf`} className="brand-gradient text-white font-semibold px-4 py-2 rounded-lg whitespace-nowrap" download>
+            Download PDF
+          </a>
         </div>
       )}
 
@@ -102,7 +107,7 @@ export default async function ReportPage({ params }: PageProps<"/report/[id]">) 
       {report.tier === "free" && (
         <div id="unlock" className="mt-16 card p-6 md:p-8 scroll-mt-20">
           <h2 className="text-2xl font-semibold tracking-tight">Unlock the full report</h2>
-          <p className="text-muted mt-2 max-w-2xl">One-time payment for this account. Every section above, with charts, rankings and recommendations. The report stays available at this link.</p>
+          <p className="text-muted mt-2 max-w-2xl">One-time payment for this account. Every section above, with charts, rankings and recommendations, plus a downloadable PDF. The report stays available at this link.</p>
           <div className="mt-5">
             <UnlockButton reportId={id} price={formatPrice()} paymentsConfigured={env.paymentsConfigured} devUnlock={env.allowDevUnlock} />
           </div>
