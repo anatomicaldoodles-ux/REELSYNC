@@ -42,45 +42,15 @@ export function Card({ children, title }: { children: React.ReactNode; title?: s
   );
 }
 
-export function NameList({
-  items,
-  timeZone,
-  emptyText = "Nobody here.",
-  max = 200,
-}: {
-  items: { username: string; at?: number }[];
-  timeZone?: string;
-  emptyText?: string;
-  max?: number;
-}) {
-  if (items.length === 0) return <p className="text-sm text-faint">{emptyText}</p>;
-  const shown = items.slice(0, max);
+export function Bullets({ items }: { items: { label: string; value: React.ReactNode }[] }) {
   return (
-    <div>
-      <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-1 text-sm max-h-96 overflow-auto pr-1">
-        {shown.map((p) => (
-          <li key={p.username} className="flex justify-between gap-3">
-            <a
-              href={`https://www.instagram.com/${encodeURIComponent(p.username)}`}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="truncate hover:underline"
-            >
-              @{p.username}
-            </a>
-            {p.at && <span className="text-faint tabular shrink-0">{fmtDateInline(p.at, timeZone)}</span>}
-          </li>
-        ))}
-      </ul>
-      {items.length > max && <p className="text-xs text-faint mt-2">Showing {max} of {items.length}.</p>}
-    </div>
+    <ul className="text-sm space-y-1.5">
+      {items.map((i) => (
+        <li key={i.label} className="flex justify-between gap-3">
+          <span className="text-muted">{i.label}</span>
+          <span className="font-medium tabular text-right">{i.value}</span>
+        </li>
+      ))}
+    </ul>
   );
-}
-
-function fmtDateInline(sec: number, timeZone?: string) {
-  try {
-    return new Intl.DateTimeFormat("en-GB", { year: "2-digit", month: "short", timeZone }).format(new Date(sec * 1000));
-  } catch {
-    return "";
-  }
 }

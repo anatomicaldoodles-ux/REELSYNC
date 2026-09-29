@@ -9,10 +9,10 @@ export default function TermsPage() {
       <p className="text-muted">Last updated: September 2026.</p>
       <p>By using ReelSync you agree to these terms.</p>
       <ul className="list-disc pl-5 space-y-2">
-        <li>ReelSync analyses a data export that you obtained from Instagram for your own account. Only upload exports of accounts you own.</li>
-        <li>The full report is a one-time purchase for a single export. It is delivered digitally and immediately at the report link.</li>
-        <li>The report reflects what your export contains. We cannot show data Instagram did not include, and we make no guarantee about Instagram&apos;s export format staying the same.</li>
-        <li>If the full report does not work for your export, contact us within 14 days of purchase for a refund.</li>
+        <li>ReelSync analyses information that is publicly visible on Instagram profiles. Use it for lawful purposes only, such as reviewing your own account, researching competitors or evaluating creators for collaborations.</li>
+        <li>The full report is a one-time purchase for a single analysed account. It is delivered digitally and immediately at the report link.</li>
+        <li>Reports reflect public data at the time of the lookup. Counts can differ from what Instagram shows, like counts hidden by the account are excluded, and availability depends on Instagram and our data provider.</li>
+        <li>If the full report does not work for the account you analysed, contact us within 14 days of purchase for a refund.</li>
         <li>You are responsible for keeping your report link private. Anyone with the link can view the report.</li>
         <li>ReelSync is provided as is, without warranty. Our liability is limited to the amount you paid.</li>
         <li>ReelSync is not affiliated with Instagram or Meta Platforms.</li>

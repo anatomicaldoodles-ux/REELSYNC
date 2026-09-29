@@ -1,65 +1,52 @@
 import Link from "next/link";
-import { formatFree, formatPrice } from "@/lib/server/env";
+import { env, formatFree, formatPrice } from "@/lib/server/env";
+import { UsernameForm } from "@/components/username-form";
 
 const FREE = [
-  "Followers, following and follow-back ratio",
-  "How many accounts don't follow you back (with a preview)",
-  "Your activity by year, peak hour and longest streak",
-  "Your top 3 accounts by interaction",
+  "Followers, following, posts and follow ratio",
+  "Engagement rate with a grade against accounts your size",
+  "Posts per week and days since the last post",
+  "Top 3 hashtags and the best performing post",
+  "ReelSync score out of 100",
 ];
 
 const PRO = [
-  "Every account that doesn't follow you back, fans and mutuals, with dates",
-  "Follower growth per month and followers you never interact with",
-  "Likes and comments: top accounts, heatmaps, your words and emojis",
-  "DM analytics: busiest chats, reply times, who you're ghosting and who ghosts you",
-  "Posting patterns: best time to post, hashtags, carousels, gaps",
-  "Story reactions, saves and collections",
-  "What Instagram thinks you like: topics, advertisers holding your data, ads shown",
-  "Searches: who you look up and don't follow",
-  "Security: logins by IP, device and time, password changes",
-  "Your full inner circle ranked, one-sided crushes and secret favourites",
+  "Engagement in depth: reels vs photos vs carousels, likes vs comments, trend over recent posts",
+  "Best days and hours to post, from what actually performed",
+  "Posting cadence, consistency score and gaps",
+  "Top and bottom posts with links",
+  "Hashtag performance: which tags earn engagement and the ideal count",
+  "Caption analysis: length, calls to action, questions, emojis and words that work",
+  "Follower growth over time (builds up each time the profile is analysed)",
+  "Prioritised recommendations to grow the account",
 ];
 
 export default function HomePage() {
   return (
     <div className="mx-auto max-w-6xl px-4">
-      <section className="py-16 md:py-24 grid md:grid-cols-2 gap-10 items-center">
-        <div>
-          <h1 className="text-4xl md:text-5xl font-semibold tracking-tight leading-tight">
-            Your Instagram, <span className="brand-text">analysed in full depth</span>. Privately.
+      <section className="py-16 md:py-24">
+        <div className="max-w-3xl">
+          <h1 className="text-4xl md:text-6xl font-semibold tracking-tight leading-tight">
+            Analyse any Instagram account <span className="brand-text">by username</span>.
           </h1>
           <p className="mt-5 text-lg text-muted">
-            Upload the data export Instagram gives you and ReelSync turns it into a report: who doesn&apos;t follow you back,
-            who you really talk to, when you post, what the algorithm thinks of you, and where your account has been
-            logged in. The analysis runs in your browser.
+            Type a public username and get a report on engagement, best posting times, hashtags, captions and growth.
+            Check your own account, a competitor, or a creator you want to work with.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/analyze" className="brand-gradient text-white font-semibold px-5 py-3 rounded-xl">
-              Analyse my export
-            </Link>
-            <Link href="/how-to-export" className="px-5 py-3 rounded-xl border border-line hover:bg-surface font-medium">
-              How do I get my export?
-            </Link>
-          </div>
-          <p className="mt-4 text-sm text-faint">Free preview. Full report {formatPrice()} one-time, per export.</p>
         </div>
-        <div className="card p-6 space-y-3">
-          <div className="text-xs uppercase tracking-wide text-faint">Sample findings</div>
-          <div className="grid grid-cols-2 gap-3">
-            <Preview label="Don't follow you back" value="143" />
-            <Preview label="Median reply time" value="12 min" />
-            <Preview label="Advertisers with your data" value="418" />
-            <Preview label="Best time to post" value="Sun 7pm" />
-          </div>
-          <div className="text-xs text-faint">Illustrative numbers.</div>
+        <div className="mt-8 max-w-2xl">
+          <UsernameForm size="lg" autoFocus />
         </div>
+        <p className="mt-4 text-sm text-faint">
+          Free preview for every lookup. Full report {formatPrice()} one-time per account.
+          {env.demoMode && " This server is running on demo data until a data provider is configured."}
+        </p>
       </section>
 
       <section className="py-12 grid md:grid-cols-3 gap-6">
-        <Step n={1} title="Request your data" text="Instagram → Settings → Your information and permissions → Download your information. Choose JSON format." />
-        <Step n={2} title="Drop the ZIP here" text="Your browser reads only the JSON files and skips photos and videos. Nothing raw is uploaded." />
-        <Step n={3} title="Read your report" text="Free sections instantly. Unlock everything else with a one-time payment for that export." />
+        <Step n={1} title="Type a username" text="Any public Instagram account. No login, nothing to install." />
+        <Step n={2} title="We fetch the public data" text="Follower counts and the most recent posts with their likes, comments, captions and timing." />
+        <Step n={3} title="Read the report" text="Free headline numbers instantly. Unlock the full breakdown with a one-time payment." />
       </section>
 
       <section className="py-12" id="pricing">
@@ -80,7 +67,7 @@ export default function HomePage() {
           <div className="card p-6 border-2" style={{ borderColor: "var(--brand-b)" }}>
             <div className="text-sm font-semibold brand-text">Full report</div>
             <div className="text-3xl font-semibold mt-1">{formatPrice()}</div>
-            <div className="text-xs text-faint">one-time, per export</div>
+            <div className="text-xs text-faint">one-time, per account</div>
             <ul className="mt-4 space-y-2 text-sm text-muted">
               {PRO.map((f) => (
                 <li key={f} className="flex gap-2">
@@ -96,23 +83,29 @@ export default function HomePage() {
       <section className="py-12">
         <h2 className="text-2xl font-semibold tracking-tight">Questions</h2>
         <dl className="mt-6 grid md:grid-cols-2 gap-6 text-sm">
-          <Faq q="Do I need to give you my password?" a="No. ReelSync never asks for your login. It reads the export file Instagram creates for you." />
-          <Faq q="Is my data uploaded?" a="The ZIP stays on your device. Your browser computes the statistics and only those statistics (counts, usernames of who you interact with, charts) are saved so your report has a link. Message texts, photos and videos are never uploaded." />
-          <Faq q="Which export format?" a="JSON. The HTML export is not supported. Any date range works; a longer range gives a richer report." />
-          <Faq q="Why is some data missing?" a="Instagram only includes what it keeps: recent searches, the last few months of ads and views, follow dates where recorded. The report shows what your export contains." />
-          <Faq q="Can I delete my report?" a="Yes. From “My reports” in this browser you can delete it permanently at any time." />
+          <Faq q="Do I need to log in to Instagram?" a="No. ReelSync only reads what is publicly visible on a profile, the same things anyone sees when they open it." />
+          <Faq q="Can I analyse a private account?" a="No. Private accounts do not expose posts, so there is nothing to analyse. Ask the owner to share their own report instead." />
+          <Faq q="Where does the data come from?" a="From the public profile page, fetched through a data provider at the moment you ask. Reports show the date and time of the fetch." />
+          <Faq q="How many posts are analysed?" a="The most recent 50 by default. That is enough for reliable engagement, timing and hashtag patterns without slowing the lookup down." />
+          <Faq q="What is the ReelSync score?" a="A 0 to 100 summary of engagement against accounts of similar size, posting frequency, consistency, recency and content mix. The full report shows every component." />
           <Faq q="Is this affiliated with Instagram?" a="No. ReelSync is an independent tool and is not affiliated with, endorsed by or connected to Instagram or Meta." />
         </dl>
       </section>
-    </div>
-  );
-}
 
-function Preview({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl bg-background border border-line p-3">
-      <div className="text-xs text-faint">{label}</div>
-      <div className="text-2xl font-semibold tabular">{value}</div>
+      <section className="py-12">
+        <div className="card p-8 text-center">
+          <h2 className="text-2xl font-semibold tracking-tight">Try it now</h2>
+          <p className="text-muted mt-2">Start with any public username. The free preview takes under a minute.</p>
+          <div className="mt-6 max-w-xl mx-auto">
+            <UsernameForm />
+          </div>
+          <p className="mt-4 text-xs text-faint">
+            <Link href="/pricing" className="underline">
+              See pricing
+            </Link>
+          </p>
+        </div>
+      </section>
     </div>
   );
 }

@@ -16,12 +16,23 @@ export const env = {
   /** Price of the full report in the smallest currency unit. */
   proPriceCents: num(process.env.PRO_REPORT_PRICE_CENTS, 79900),
   proCurrency: (process.env.PRO_REPORT_CURRENCY ?? "inr").toLowerCase(),
-  /** Maximum accepted size of an uploaded (gzipped) report payload. */
-  maxReportBytes: num(process.env.MAX_REPORT_BYTES, 25 * 1024 * 1024),
+  /** Apify token for the Instagram data provider. Empty means demo data. */
+  apifyToken: process.env.APIFY_TOKEN,
+  /** How many recent posts to analyse per lookup. */
+  postsLimit: num(process.env.LOOKUP_POSTS_LIMIT, 50),
+  /** Reuse a fetched profile for this many hours before paying for a new fetch. */
+  snapshotTtlHours: num(process.env.SNAPSHOT_TTL_HOURS, 24),
+  /** Lookups a single IP may start per day. */
+  lookupsPerIpPerDay: num(process.env.LOOKUPS_PER_IP_PER_DAY, 15),
+  /** Salt for hashing client IPs before storing them. */
+  ipSalt: process.env.IP_HASH_SALT ?? "reelsync",
   /** Allows unlocking reports without paying. Never enable in production. */
   allowDevUnlock: process.env.ALLOW_DEV_UNLOCK === "true" && process.env.NODE_ENV !== "production",
   get paymentsConfigured() {
     return Boolean(this.razorpayKeyId && this.razorpayKeySecret);
+  },
+  get demoMode() {
+    return !this.apifyToken;
   },
 };
 

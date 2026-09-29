@@ -1,127 +1,112 @@
 # ReelSync
 
-Deep, private Instagram analytics from the data export Instagram gives every user.
-People upload their "Download your information" ZIP, get a free preview, and can
-unlock the full report with a one-time payment.
+Instagram analytics by username. Visitors type any public Instagram username and
+get a report on engagement, best posting times, hashtags, captions and growth.
+The headline numbers are free; the full report is a one-time Razorpay payment
+per analysed account.
 
 ## How it works
 
-1. The user requests their data from Instagram in **JSON** format (guide at `/how-to-export`).
-2. On `/analyze` the ZIP is opened **in the browser**. A custom ZIP reader reads only the
-   central directory and the JSON entries, so multi-gigabyte exports full of media are fine.
-3. A Web Worker parses the JSON into a normalised dataset and computes the full report
-   (`src/lib/instagram`). Raw data, media and message texts never leave the device.
-4. The gzipped report JSON is stored server-side (`POST /api/reports`) so it has a link.
-5. The report page renders the **free** sections and locked placeholders for the **pro**
-   sections. The server strips pro data from free reports; it is never sent to the client.
-6. "Unlock" opens Razorpay Checkout. The server verifies the payment signature (and a
-   webhook acts as backup), marks the report as paid, and the full report renders at
-   the same link.
+1. `POST /api/lookup` normalises the username and checks the per-IP daily limit.
+2. If a snapshot of that profile was fetched within `SNAPSHOT_TTL_HOURS`, it is
+   reused. Otherwise the data provider fetches the public profile and its most
+   recent posts, and the snapshot is stored (`ProfileSnapshot`). Snapshots double
+   as follower history for the growth chart.
+3. `analyzeProfile` (`src/lib/profile/analyze.ts`) computes the report.
+4. The report is stored (`Report`) and rendered at `/report/[id]`. Pro sections are
+   stripped server-side for free reports.
+5. "Unlock" opens Razorpay Checkout; the server verifies the signature and marks
+   the report `pro`. A webhook acts as backup.
 
 ### Free vs pro
 
-| Free | Pro (one-time, per export) |
+| Free | Pro (one-time, per account) |
 |---|---|
-| Overview: followers, following, ratio, account age, totals | Full lists: not following back, fans, mutuals, recently unfollowed, pending, blocked, restricted, close friends, with dates |
-| Counts of non-followers, mutuals, fans + 5-account preview | Follower/following growth per month, oldest/newest followers, people you never interact with |
-| Activity by year, peak hour/day, active days, longest streak | Likes & comments: per month, weekday×hour heatmap, top accounts, words and emojis |
-| Top 3 accounts by interaction | Posting: best time to post, posts/reels/stories per month, hashtags, mentions, cadence |
-| | DMs: busiest chats, reply times, ghosting both ways, reels shared, reactions, night-owl share |
-| | Stories & saves, algorithm profile (topics, advertisers, ads, feed sources), searches |
-| | Security: logins by IP/platform/time, devices, password and profile changes |
-| | Everyone you interact with, ranked, plus one-sided and secret favourites |
+| Profile numbers, follow ratio, followers per post | Score breakdown and prioritised recommendations |
+| Engagement rate with grade vs accounts of similar size | Engagement by format, comments per 100 likes, recent-vs-older trend, per-post chart |
+| Posts per week, days since last post, reels share | Best day and hour, engagement by weekday and time of day, posting heatmap |
+| Top 3 hashtags, best post, best day | Cadence, consistency score, gaps, posts per month |
+| ReelSync score | Top and bottom posts, format mix comparisons |
+| | Hashtag usage and performance, ideal hashtag count |
+| | Caption length, call-to-action effect, questions, emojis, words |
+| | Follower growth across snapshots |
+
+## Data provider
+
+Instagram has no public API for arbitrary usernames, so ReelSync uses a data
+provider. The default adapter runs the Apify actor `apify/instagram-scraper`
+(`src/lib/profile/providers/apify.ts`). Set `APIFY_TOKEN` to enable it; each
+lookup is billed by Apify per result. Without a token the site runs on the
+**demo provider**, which generates deterministic sample data so everything can be
+tried locally. Demo reports are labelled as such.
+
+Adding another provider means implementing `ProfileProvider` (one method:
+`fetchProfile(username)` returning a `PublicProfile`) and selecting it in
+`src/lib/profile/providers/index.ts`.
+
+Limits to be aware of: private accounts cannot be analysed, like counts hidden by
+the account are excluded, and only the most recent `LOOKUP_POSTS_LIMIT` posts
+(default 50) are used.
 
 ## Stack
 
-- Next.js 16 (App Router, Turbopack), React 19, TypeScript, Tailwind CSS 4
+- Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4
 - Prisma 7 with SQLite (dev) via `@prisma/adapter-better-sqlite3`
 - Razorpay Checkout + webhooks
-- `fflate` for gzip/inflate, Zod for validation, Vitest for tests
+- Zod for validation, Vitest for tests
 
 ## Running locally
 
 ```bash
 npm install
-cp .env.example .env        # defaults work without Razorpay
-npx prisma migrate dev       # creates prisma/dev.db
+cp .env.example .env        # demo data and no payments by default
+npx prisma migrate dev       # creates dev.db
 npm run dev                  # http://localhost:3000
 ```
 
-Create a sample export to try the flow without a real Instagram account:
-
-```bash
-npx tsx scripts/make-sample-export.ts sample-export.zip
-```
-
-With `ALLOW_DEV_UNLOCK=true` (and not in production) the report page shows a
-"Developer: unlock without paying" link so you can see the full report.
+With `ALLOW_DEV_UNLOCK=true` (ignored in production) each report shows a
+"Developer: unlock without paying" link.
 
 ### Tests and checks
 
 ```bash
-npm test          # parser, analyzer and ZIP reader tests
+npm test          # analyzer, provider mapping, signature tests
 npm run lint
 npm run build
 ```
 
 ## Payments (Razorpay)
 
-1. Create a Razorpay account, then copy the **Key Id** and **Key Secret** from
-   Settings → API Keys into `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET`. Test keys
-   (`rzp_test_...`) let you pay with Razorpay's test cards and test UPI ids.
-2. Optional but recommended: add a webhook in Settings → Webhooks pointing at
-   `https://yourdomain/api/razorpay/webhook` with the `payment.captured` event, choose
-   a secret, and put it in `RAZORPAY_WEBHOOK_SECRET`. The webhook is a backup: reports
-   are normally unlocked as soon as the browser reports a successful payment and the
-   server verifies the signature.
+1. Copy the **Key Id** and **Key Secret** from Settings → API Keys into
+   `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET`. Test keys (`rzp_test_...`) work
+   with Razorpay's test cards and `success@razorpay` UPI id.
+2. Optional: add a webhook at `https://yourdomain/api/razorpay/webhook` for
+   `payment.captured`, and put its secret in `RAZORPAY_WEBHOOK_SECRET`.
 3. Price and currency come from `PRO_REPORT_PRICE_CENTS` and `PRO_REPORT_CURRENCY`
    (default 79900 + inr, shown as ₹799).
-
-Flow: `POST /api/checkout` creates a Razorpay order and a pending Payment row → the
-browser opens Razorpay Checkout → on success it calls `POST /api/checkout/verify`
-with the order id, payment id and signature → the server checks the HMAC, confirms
-the payment with Razorpay's API, and flips the report to `pro`.
 
 ## Production notes
 
 - **Database:** switch `provider` in `prisma/schema.prisma` to `postgresql`, install
-  `@prisma/adapter-pg` and `pg`, and swap the adapter in `src/lib/server/db.ts`.
-  Then `npx prisma migrate deploy`.
-- **Never** set `ALLOW_DEV_UNLOCK=true` in production; it is also disabled whenever
-  `NODE_ENV=production`.
-- Report payloads are gzipped JSON, typically well under 1 MB. `MAX_REPORT_BYTES` caps
-  uploads. Hosts with small request-body limits (for example 4.5 MB on some serverless
-  platforms) need direct-to-storage uploads for very heavy accounts.
-- Report links are unguessable IDs; anyone with the link can view the report. Deletion is
-  available from `/reports` (delete token stored only in the creator's browser).
-- Retention: add a scheduled job to delete old free reports if you want to bound storage.
-
-## Data coverage and limits
-
-The analyzer targets the export layout Instagram has used since 2023
-(`connections/`, `your_instagram_activity/`, `ads_information/`, ...) and tolerates the
-older flat layout where the file names match. Key names are matched case-insensitively
-with a few localisations; exports generated in other languages may miss some fields.
-Instagram itself only includes recent searches, ad impressions and post views, and
-follow dates only where it recorded them.
-
-Message participants are display names, not usernames, so DM statistics are reported
-separately from username-based interaction rankings.
+  `@prisma/adapter-pg` and `pg`, swap the adapter in `src/lib/server/db.ts`, then
+  `npx prisma migrate deploy`.
+- **Costs:** every uncached lookup calls the provider. `SNAPSHOT_TTL_HOURS` and
+  `LOOKUPS_PER_IP_PER_DAY` are the two knobs that bound spend. Set `IP_HASH_SALT`
+  to a random string.
+- **Timeouts:** provider fetches can take 30 to 90 seconds. `/api/lookup` sets
+  `maxDuration = 180`; make sure your host allows that.
+- Never set `ALLOW_DEV_UNLOCK=true` in production (it is also disabled whenever
+  `NODE_ENV=production`).
+- Report links are unguessable IDs; anyone with the link can view a report.
 
 ## Project layout
 
 ```
-src/lib/instagram/         parser + analyzer (pure TypeScript, runs in browser and Node)
-  parse.ts                 export file matchers → Dataset
-  analyze/                 report sections (followers, engagement, content, messages, ...)
-  __tests__/               synthetic export fixture and tests
-src/lib/client/            browser ZIP reader, localStorage report registry
-src/workers/               analysis Web Worker
-src/lib/server/            env, Prisma client, Razorpay, report persistence
-src/app/                   pages and API routes
-src/components/            charts, report sections, uploader, unlock button
+src/lib/profile/           types, providers (apify, demo), analyzer, report types
+src/lib/server/            env, Prisma client, lookup service, Razorpay, persistence
+src/app/                   pages and API routes (/api/lookup, /api/checkout, ...)
+src/components/            charts, report sections, username form, unlock button
 prisma/                    schema and migrations
-scripts/                   make-sample-export.ts
 ```
 
 ReelSync is not affiliated with Instagram or Meta.

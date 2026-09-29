@@ -6,39 +6,26 @@ import { getGatedReport } from "@/lib/server/reports";
 import { fmtNumber } from "@/lib/format";
 import { UnlockButton } from "@/components/unlock-button";
 import { LockedSection } from "@/components/report/locked-section";
-import { ActivitySnapshotView, FollowersSnapshotView, OverviewSectionView, TopPeopleTeaserView } from "@/components/report/free-sections";
-import {
-  ContentView,
-  EngagementView,
-  FollowersFullView,
-  InterestsView,
-  MessagesView,
-  PeopleView,
-  SearchesView,
-  SecurityView,
-  StoriesSavedView,
-} from "@/components/report/pro-sections";
+import { CadenceHeadlineView, EngagementHeadlineView, OverviewView, TeaserView } from "@/components/report/free-sections";
+import { CadenceDeepView, CaptionsView, ContentView, EngagementDeepView, GrowthView, HashtagsView, ScoreView, TimingView } from "@/components/report/pro-sections";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "Your report", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Report", robots: { index: false, follow: false } };
 
-const NAV_FREE = [
-  ["overview", "Overview"],
-  ["followers", "Followers"],
-  ["activity", "Activity"],
-  ["people", "Inner circle"],
-];
-const NAV_PRO = [
-  ["followers-full", "Followers in depth"],
-  ["people-full", "Everyone"],
-  ["engagement", "Likes & comments"],
-  ["content", "Posting"],
-  ["messages", "DMs"],
-  ["stories-saved", "Stories & saves"],
-  ["interests", "Algorithm"],
-  ["searches", "Searches"],
-  ["security", "Security"],
+const NAV: [string, string][] = [
+  ["overview", "Profile"],
+  ["engagement", "Engagement"],
+  ["cadence", "Rhythm"],
+  ["highlights", "Highlights"],
+  ["score", "Score"],
+  ["engagement-full", "Engagement in depth"],
+  ["timing", "When to post"],
+  ["cadence-full", "Cadence"],
+  ["content", "Content"],
+  ["hashtags", "Hashtags"],
+  ["captions", "Captions"],
+  ["growth", "Growth"],
 ];
 
 export default async function ReportPage({ params }: PageProps<"/report/[id]">) {
@@ -46,16 +33,15 @@ export default async function ReportPage({ params }: PageProps<"/report/[id]">) 
   const report = await getGatedReport(id);
   if (!report) notFound();
   const { free, pro, timeZone } = report;
-  const o = free.overview;
-  const s = free.followersSnapshot;
+  const p = free.overview.profile;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm text-faint">Report · {new Date(report.createdAt).toLocaleDateString("en-GB")}</p>
-          <h1 className="text-3xl font-semibold tracking-tight">{o.username ? `@${o.username}` : "Your Instagram"}</h1>
-          {o.name && <p className="text-muted">{o.name}</p>}
+          <h1 className="text-3xl font-semibold tracking-tight">@{p.username}</h1>
+          {p.fullName && <p className="text-muted">{p.fullName}</p>}
         </div>
         <div className="text-sm">
           {report.tier === "pro" ? (
@@ -75,7 +61,7 @@ export default async function ReportPage({ params }: PageProps<"/report/[id]">) 
       )}
 
       <nav className="mt-8 flex gap-2 overflow-x-auto text-sm pb-2 -mx-4 px-4">
-        {[...NAV_FREE, ...NAV_PRO].map(([href, label]) => (
+        {NAV.map(([href, label]) => (
           <a key={href} href={`#${href}`} className="shrink-0 px-3 py-1 rounded-full border border-line hover:bg-surface whitespace-nowrap">
             {label}
           </a>
@@ -83,88 +69,32 @@ export default async function ReportPage({ params }: PageProps<"/report/[id]">) 
       </nav>
 
       <div className="mt-10 space-y-16">
-        <OverviewSectionView data={o} timeZone={timeZone} />
-        <FollowersSnapshotView data={s} />
-        <ActivitySnapshotView data={free.activitySnapshot} />
-        <TopPeopleTeaserView data={free.topPeopleTeaser} />
+        <OverviewView data={free.overview} timeZone={timeZone} />
+        <EngagementHeadlineView data={free.engagement} />
+        <CadenceHeadlineView data={free.cadence} />
+        <TeaserView data={free.teaser} timeZone={timeZone} />
 
         {pro ? (
           <>
-            <FollowersFullView data={pro.followers} timeZone={timeZone} />
-            <PeopleView data={pro.people} timeZone={timeZone} />
-            <EngagementView data={pro.engagement} timeZone={timeZone} />
+            <ScoreView data={pro.score} />
+            <EngagementDeepView data={pro.engagement} />
+            <TimingView data={pro.timing} timeZone={timeZone} />
+            <CadenceDeepView data={pro.cadence} timeZone={timeZone} />
             <ContentView data={pro.content} timeZone={timeZone} />
-            <MessagesView data={pro.messages} timeZone={timeZone} />
-            <StoriesSavedView stories={pro.stories} saved={pro.saved} />
-            <InterestsView data={pro.interests} />
-            <SearchesView data={pro.searches} />
-            <SecurityView data={pro.security} timeZone={timeZone} />
+            <HashtagsView data={pro.hashtags} />
+            <CaptionsView data={pro.captions} />
+            <GrowthView data={pro.growth} />
           </>
         ) : (
           <>
-            <LockedSection
-              id="followers-full"
-              title="Followers in depth"
-              description="Full lists with dates, growth per month, and the people you never interact with."
-              teaser={`See all ${fmtNumber(s.notFollowingBack)} accounts that don't follow you back and your ${fmtNumber(s.fans)} fans.`}
-              bullets={["Every non-follower, mutual and fan with the month they followed", "New followers per month", "Oldest and newest followers", "Followers you have never interacted with", "Recently unfollowed, pending, blocked and restricted"]}
-            />
-            <LockedSection
-              id="people-full"
-              title="Everyone you interact with"
-              description="Your full inner circle, ranked."
-              teaser={`Your top 100 of ${fmtNumber(free.topPeopleTeaser.totalAccountsInteractedWith)} accounts, with likes, comments, saves and searches for each.`}
-              bullets={["Weighted interaction score per account", "One-sided: accounts you engage with that don't follow you", "Secret favourites you don't follow", "First and last interaction dates"]}
-            />
-            <LockedSection
-              id="engagement"
-              title="Likes & comments"
-              description="What you give and when."
-              teaser={`${fmtNumber(o.totals.likes)} likes and ${fmtNumber(o.totals.comments)} comments, broken down by month, hour and account.`}
-              bullets={["Likes and comments per month", "Weekday × hour heatmap", "Top 50 liked and commented accounts", "Your comment words and emojis", "Share of likes that go to accounts you follow"]}
-            />
-            <LockedSection
-              id="content"
-              title="Your posting"
-              description="Patterns behind your posts, reels and stories."
-              teaser={`${fmtNumber(o.totals.posts + o.totals.reels)} posts and reels, ${fmtNumber(o.totals.stories)} stories analysed.`}
-              bullets={["Best time to post based on your history", "Posts, reels and stories per month", "Hashtags and mentions you use", "Carousel share and media per post", "Longest gap and average cadence"]}
-            />
-            <LockedSection
-              id="messages"
-              title="Direct messages"
-              description="Who you actually talk to."
-              teaser={`${fmtNumber(o.totals.messagesSent)} messages sent across ${fmtNumber(o.totals.threads)} conversations.`}
-              bullets={["Busiest conversations with sent/received split", "Median reply time, yours and theirs", "Who you're ghosting and who ghosts you", "Reels shared, voice notes, calls, reactions", "Night-owl share and busiest day"]}
-            />
-            <LockedSection
-              id="stories-saved"
-              title="Stories & saves"
-              description="Whose stories you react to and what you keep."
-              teaser={`${fmtNumber(o.totals.storyInteractions)} story reactions and ${fmtNumber(o.totals.savedPosts)} saved posts.`}
-              bullets={["Top accounts by story reactions", "Poll and quiz answers", "Most saved creators", "Saves per month and collections"]}
-            />
-            <LockedSection
-              id="interests"
-              title="What Instagram thinks about you"
-              description="Topics, advertisers and the feed."
-              teaser={`${fmtNumber(o.totals.adsViewed)} ads were shown to you. See who is paying to reach you.`}
-              bullets={["Topics Instagram assigned to you", "Advertisers using your activity or information", "Advertisers and creators you see most", "Share of your feed from accounts you follow", "Suggested accounts you looked at"]}
-            />
-            <LockedSection
-              id="searches"
-              title="Searches"
-              description="Who and what you look up."
-              teaser={`${fmtNumber(o.totals.searches)} recent searches analysed.`}
-              bullets={["Profiles you search for most", "Profiles you search for but don't follow", "Keywords and hashtags", "Searches per month"]}
-            />
-            <LockedSection
-              id="security"
-              title="Security & logins"
-              description="Where your account has been used."
-              teaser={`${fmtNumber(o.totals.logins)} logins recorded. Check for devices and locations you don't recognise.`}
-              bullets={["Logins by platform, IP and month", "Login heatmap", "Devices with last login", "Password changes and profile changes", "Signup date, IP and device"]}
-            />
+            <LockedSection id="score" title="ReelSync score & recommendations" description="How the score is built, and what would move it most." teaser={`Score ${free.engagement.score}/100. See the five components and a prioritised list of what to change.`} bullets={["Engagement vs benchmark, frequency, consistency, recency, content mix", "Up to 8 specific recommendations with expected impact"]} />
+            <LockedSection id="engagement-full" title="Engagement in depth" description="Which formats work and whether engagement is trending." teaser={`Average ${fmtNumber(free.engagement.avgLikes)} likes and ${fmtNumber(free.engagement.avgComments)} comments per post, broken down by format.`} bullets={["Reels vs photos vs carousels", "Comments per 100 likes", "Recent vs older posts trend", "Engagement per post chart", "Sponsored vs organic"]} />
+            <LockedSection id="timing" title="When to post" description="Best days and hours, from what actually performed." teaser={`Best day: ${free.teaser.bestDayName ?? "see report"}. The best hour and full weekday × hour heatmap are in the full report.`} bullets={["Best day and hour by average engagement", "Engagement by weekday and time of day", "Posting heatmap"]} />
+            <LockedSection id="cadence-full" title="Cadence & consistency" description="Rhythm, gaps and regularity." teaser={`${fmtNumber(free.cadence.postsPerWeek)} posts per week. See the consistency score, longest gap and posts per month.`} bullets={["Posts per month chart", "Average and longest gap", "Consistency score", "Active weeks"]} />
+            <LockedSection id="content" title="Content" description="Top and bottom posts, format mix and what outperforms." teaser="Top 6 and bottom 3 posts with links, and how reels and carousels compare to photos." bullets={["Format mix", "Reels vs photos, carousels vs photos", "Top posts ranked", "Lowest performing posts"]} />
+            <LockedSection id="hashtags" title="Hashtags" description="Which tags earn engagement and how many to use." teaser={`Top hashtags: ${free.teaser.topHashtags.map((h) => `#${h}`).join(" ") || "none"}. See performance per tag and the ideal count.`} bullets={["Most used hashtags", "Best performing hashtags", "Engagement by hashtag count", "With vs without hashtags"]} />
+            <LockedSection id="captions" title="Captions" description="Length, calls to action, questions, emojis and words." teaser="Find the caption length and style that gets the most engagement on this account." bullets={["Engagement by caption length", "Call-to-action effect", "Questions, emojis, mentions", "Most used words"]} />
+            <LockedSection id="growth" title="Follower growth" description="Builds up each time this profile is analysed." teaser="Follower trend across snapshots, with change per day." bullets={["Followers over time", "Change over the tracked period"]} />
           </>
         )}
       </div>
@@ -172,10 +102,7 @@ export default async function ReportPage({ params }: PageProps<"/report/[id]">) 
       {report.tier === "free" && (
         <div id="unlock" className="mt-16 card p-6 md:p-8 scroll-mt-20">
           <h2 className="text-2xl font-semibold tracking-tight">Unlock the full report</h2>
-          <p className="text-muted mt-2 max-w-2xl">
-            One-time payment for this export. You get every section above, the complete lists, and the report stays
-            available at this link. Want to analyse a newer export later? That is a new report.
-          </p>
+          <p className="text-muted mt-2 max-w-2xl">One-time payment for this account. Every section above, with charts, rankings and recommendations. The report stays available at this link.</p>
           <div className="mt-5">
             <UnlockButton reportId={id} price={formatPrice()} paymentsConfigured={env.paymentsConfigured} devUnlock={env.allowDevUnlock} />
           </div>
@@ -183,7 +110,7 @@ export default async function ReportPage({ params }: PageProps<"/report/[id]">) 
       )}
 
       <p className="mt-12 text-xs text-faint">
-        This report was computed from your export in your browser. Anything the export does not contain cannot be shown.{" "}
+        Computed from publicly visible profile data at the time shown above. Like counts hidden by the account are excluded.{" "}
         <Link href="/reports" className="underline">
           Manage or delete your reports
         </Link>
