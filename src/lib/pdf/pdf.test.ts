@@ -23,3 +23,27 @@ describe("pdf", () => {
     expect((pdf.toString("latin1").match(/\/Type\s*\/Page[^s]/g) ?? []).length).toBeGreaterThanOrEqual(4);
   }, 30_000);
 });
+
+describe("Devanagari support", () => {
+  it("splits mixed text into script runs", async () => {
+    const { splitScriptRuns } = await import("./mixed-text");
+    expect(splitScriptRuns("Hello दुनिया, नमस्ते world")).toEqual([
+      { text: "Hello ", devanagari: false },
+      { text: "दुनिया, नमस्ते", devanagari: true },
+      { text: " world", devanagari: false },
+    ]);
+    expect(splitScriptRuns("plain")).toEqual([{ text: "plain", devanagari: false }]);
+  });
+  it("embeds the Devanagari font when captions use it", async () => {
+    const profile = await new DemoProvider().fetchProfile("hindi_tester");
+    profile.fullName = "प्रिया शर्मा";
+    profile.biography = "मुंबई की फ़ूड ब्लॉगर · Food & travel";
+    profile.posts[0].caption = "आज का नाश्ता: पोहा और चाय ☕ #nashta #मुंबई";
+    profile.posts[0].likes = 999_999;
+    profile.posts[0].hashtags = ["nashta", "मुंबई"];
+    const report = analyzeProfile(profile, { timeZone: "Asia/Kolkata" });
+    const pdf = await renderReportPdf(report, "http://localhost:3000/report/x");
+    expect(pdf.toString("latin1")).toMatch(/NotoSansDevanagari/);
+    if (process.env.PDF_OUT) (await import("node:fs")).writeFileSync(process.env.PDF_OUT, pdf);
+  }, 30_000);
+});

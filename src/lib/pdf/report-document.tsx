@@ -2,6 +2,7 @@ import { Document, Page, Text, View, StyleSheet, Link } from "@react-pdf/rendere
 import type { ProfileReport, PostSummary } from "@/lib/profile/report";
 import { WEEKDAY_NAMES } from "@/lib/profile/time";
 import { pdfSafe } from "./text";
+import { MixedText } from "./mixed-text";
 import { BLUE, BRAND, FAINT, INK, LINE, MUTED, PdfBars, PdfHeatmap, compact } from "./charts";
 
 const CONTENT_WIDTH = 515; // A4 width 595 minus 40pt padding each side
@@ -82,10 +83,7 @@ function RankedBars({ items, prefix = "" }: { items: { name: string; count: numb
       {items.map((i) => (
         <View key={i.name} style={{ marginBottom: 3 }} wrap={false}>
           <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-            <Text style={{ fontSize: 8 }}>
-              {prefix}
-              {pdfSafe(i.name, 40)}
-            </Text>
+            <MixedText style={{ fontSize: 8 }}>{`${prefix}${pdfSafe(i.name, 40)}`}</MixedText>
             <Text style={{ fontSize: 8, color: MUTED }}>{fmt(i.count)}</Text>
           </View>
           <View style={s.barBg}>
@@ -111,7 +109,7 @@ function PostRow({ post, rank }: { post: PostSummary; rank?: number }) {
           {compact(post.likes)} likes · {compact(post.comments)} comments{post.views !== undefined ? ` · ${compact(post.views)} views` : ""}
         </Text>
       </View>
-      <Text style={{ fontSize: 8 }}>{pdfSafe(post.caption, 140) || "No caption"}</Text>
+      <MixedText style={{ fontSize: 8 }}>{pdfSafe(post.caption, 140) || "No caption"}</MixedText>
       <Link src={post.url} style={{ fontSize: 6.5, color: BLUE }}>
         {post.url}
       </Link>
@@ -150,12 +148,12 @@ export function ReportDocument({ report, reportUrl }: { report: ProfileReport; r
         <Header username={p.username} generated={generated} />
         <Footer reportUrl={reportUrl} />
         <Text style={s.h1}>@{p.username}</Text>
-        {p.fullName ? <Text style={{ fontSize: 11, color: MUTED, lineHeight: 1.3 }}>{pdfSafe(p.fullName, 80)}</Text> : null}
+        {p.fullName ? <MixedText style={{ fontSize: 11, color: MUTED, lineHeight: 1.3 }}>{pdfSafe(p.fullName, 80)}</MixedText> : null}
         <Text style={[s.faint, { marginTop: 2 }]}>
           Public data fetched {date(p.fetchedAt)} · {free.overview.postsAnalysed} most recent posts analysed · times in {timeZone}
           {p.provider === "demo" ? " · DEMO DATA" : ""}
         </Text>
-        {p.biography ? <Text style={[s.muted, { marginTop: 6 }]}>{pdfSafe(p.biography, 300)}</Text> : null}
+        {p.biography ? <MixedText style={[s.muted, { marginTop: 6 }]}>{pdfSafe(p.biography, 300)}</MixedText> : null}
 
         <View style={[s.row, { marginTop: 14 }]}>
           <Tile label="Followers" value={compact(p.followers)} hint={fmt(p.followers)} />
@@ -334,9 +332,7 @@ export function ReportDocument({ report, reportUrl }: { report: ProfileReport; r
             <Text style={s.h3}>Words that appear most</Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
               {pro.captions.topWords.slice(0, 24).map((w) => (
-                <Text key={w.name} style={s.chip}>
-                  {pdfSafe(w.name, 24)} {w.count}
-                </Text>
+                <MixedText key={w.name} style={s.chip}>{`${pdfSafe(w.name, 24)} ${w.count}`}</MixedText>
               ))}
             </View>
           </View>

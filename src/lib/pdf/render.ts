@@ -16,6 +16,13 @@ function registerFonts() {
       { src: path.join(dir, "DejaVuSans-Bold.ttf"), fontWeight: 700 },
     ],
   });
+  Font.register({
+    family: "NotoDevanagari",
+    fonts: [
+      { src: path.join(dir, "NotoSansDevanagari-Regular.ttf"), fontWeight: 400 },
+      { src: path.join(dir, "NotoSansDevanagari-Bold.ttf"), fontWeight: 700 },
+    ],
+  });
   // Keep words intact: no hyphenation.
   Font.registerHyphenationCallback((word) => [word]);
   fontsRegistered = true;
