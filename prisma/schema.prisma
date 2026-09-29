@@ -1,0 +1,52 @@
+// Prisma schema for ReelSync.
+// Dev uses SQLite; switch `provider` to "postgresql" and the adapter in src/lib/db.ts for production.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+/// One analysed Instagram export. Raw export data is never stored: only the
+/// computed report JSON. Free reports get the pro sections stripped at read time.
+model Report {
+  id          String    @id @default(cuid())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  /// Instagram username the export belongs to (from the export itself).
+  username    String?
+  /// "free" until a successful payment flips it to "pro".
+  tier        String    @default("free")
+  paidAt      DateTime?
+  /// Email captured from Stripe Checkout, used for receipts / report recovery.
+  email       String?
+  /// Full AnalysisReport JSON (all sections, free and pro).
+  data        String
+  /// Analyzer version that produced `data`, for future re-rendering decisions.
+  analyzerVersion String
+  /// Secret token that allows deleting the report without an account.
+  deleteToken String    @unique @default(cuid())
+  payments    Payment[]
+
+  @@index([createdAt])
+}
+
+model Payment {
+  id                    String   @id @default(cuid())
+  createdAt             DateTime @default(now())
+  reportId              String
+  report                Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  stripeSessionId       String   @unique
+  stripePaymentIntentId String?
+  /// Amount in the smallest currency unit (cents).
+  amount                Int
+  currency              String
+  /// "pending" | "paid" | "refunded"
+  status                String   @default("pending")
+  email                 String?
+
+  @@index([reportId])
+}
