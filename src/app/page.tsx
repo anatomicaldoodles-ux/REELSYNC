@@ -19,6 +19,7 @@ const PRO = [
   "Caption analysis: length, calls to action, questions, emojis and words that work",
   "Follower growth over time (builds up each time the profile is analysed)",
   "Prioritised recommendations to grow the account",
+  "Downloadable PDF of the whole report",
 ];
 
 export default function HomePage() {

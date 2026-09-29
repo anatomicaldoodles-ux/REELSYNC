@@ -17,6 +17,10 @@ per analysed account.
    stripped server-side for free reports.
 5. "Unlock" opens Razorpay Checkout; the server verifies the signature and marks
    the report `pro`. A webhook acts as backup.
+6. Unlocked reports can be downloaded as a PDF (`GET /api/reports/[id]/pdf`),
+   rendered server-side with `@react-pdf/renderer` from the stored report. The
+   bundled DejaVu Sans font (`assets/fonts`) covers Latin, Greek and Cyrillic;
+   emoji are stripped from PDF text.
 
 ### Free vs pro
 
@@ -30,6 +34,7 @@ per analysed account.
 | | Hashtag usage and performance, ideal hashtag count |
 | | Caption length, call-to-action effect, questions, emojis, words |
 | | Follower growth across snapshots |
+| | Downloadable PDF of the whole report |
 
 ## Data provider
 
@@ -93,6 +98,9 @@ npm run build
 - **Costs:** every uncached lookup calls the provider. `SNAPSHOT_TTL_HOURS` and
   `LOOKUPS_PER_IP_PER_DAY` are the two knobs that bound spend. Set `IP_HASH_SALT`
   to a random string.
+- **PDF fonts:** `next.config.ts` traces `assets/fonts` into the PDF route's bundle
+  for standalone/serverless builds. If PDFs fail on a host with "font not found",
+  check that directory is deployed.
 - **Timeouts:** provider fetches can take 30 to 90 seconds. `/api/lookup` sets
   `maxDuration = 180`; make sure your host allows that.
 - Never set `ALLOW_DEV_UNLOCK=true` in production (it is also disabled whenever

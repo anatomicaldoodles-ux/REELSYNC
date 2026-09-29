@@ -18,7 +18,7 @@ export default function PricingPage() {
         <div className="card p-6 border-2" style={{ borderColor: "var(--brand-b)" }}>
           <div className="font-semibold brand-text">Full report</div>
           <div className="text-3xl font-semibold mt-1">{formatPrice()}</div>
-          <p className="text-sm text-muted mt-3">All eight in-depth sections: score breakdown and recommendations, engagement by format, best times to post, cadence, top and bottom posts, hashtag and caption performance, follower growth. Stays unlocked at its link.</p>
+          <p className="text-sm text-muted mt-3">All eight in-depth sections: score breakdown and recommendations, engagement by format, best times to post, cadence, top and bottom posts, hashtag and caption performance, follower growth. Includes a downloadable PDF. Stays unlocked at its link.</p>
         </div>
       </div>
       <p className="mt-8 text-sm text-muted">
