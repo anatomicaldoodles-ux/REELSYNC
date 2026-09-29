@@ -43,8 +43,8 @@ next-env.d.ts
 /src/generated/prisma
 
 # database
-/prisma/*.db
-/prisma/*.db-journal
+*.db
+*.db-journal
 /src/generated/
 
 # keep the example env file
