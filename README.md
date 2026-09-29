@@ -14,8 +14,9 @@ unlock the full report with a one-time payment.
 4. The gzipped report JSON is stored server-side (`POST /api/reports`) so it has a link.
 5. The report page renders the **free** sections and locked placeholders for the **pro**
    sections. The server strips pro data from free reports; it is never sent to the client.
-6. "Unlock" starts a Stripe Checkout session. The webhook (or, as a fallback, the success
-   URL) marks the report as paid and the full report renders at the same link.
+6. "Unlock" opens Razorpay Checkout. The server verifies the payment signature (and a
+   webhook acts as backup), marks the report as paid, and the full report renders at
+   the same link.
 
 ### Free vs pro
 
@@ -34,14 +35,14 @@ unlock the full report with a one-time payment.
 
 - Next.js 16 (App Router, Turbopack), React 19, TypeScript, Tailwind CSS 4
 - Prisma 7 with SQLite (dev) via `@prisma/adapter-better-sqlite3`
-- Stripe Checkout + webhooks
+- Razorpay Checkout + webhooks
 - `fflate` for gzip/inflate, Zod for validation, Vitest for tests
 
 ## Running locally
 
 ```bash
 npm install
-cp .env.example .env        # defaults work without Stripe
+cp .env.example .env        # defaults work without Razorpay
 npx prisma migrate dev       # creates prisma/dev.db
 npm run dev                  # http://localhost:3000
 ```
@@ -63,19 +64,23 @@ npm run lint
 npm run build
 ```
 
-## Payments (Stripe)
+## Payments (Razorpay)
 
-1. Set `STRIPE_SECRET_KEY` in `.env`.
-2. Point a webhook at `/api/stripe/webhook` for `checkout.session.completed` (and
-   `checkout.session.async_payment_succeeded`), and set `STRIPE_WEBHOOK_SECRET`.
-   Locally: `stripe listen --forward-to localhost:3000/api/stripe/webhook`.
-3. Set `NEXT_PUBLIC_APP_URL` to the public URL so Stripe redirects back correctly.
-4. Price and currency come from `PRO_REPORT_PRICE_CENTS` and `PRO_REPORT_CURRENCY`
-   (default 79900 + inr, shown as ₹799). Stripe must support charging in that
-   currency for your account country; INR works on Indian Stripe accounts.
+1. Create a Razorpay account, then copy the **Key Id** and **Key Secret** from
+   Settings → API Keys into `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET`. Test keys
+   (`rzp_test_...`) let you pay with Razorpay's test cards and test UPI ids.
+2. Optional but recommended: add a webhook in Settings → Webhooks pointing at
+   `https://yourdomain/api/razorpay/webhook` with the `payment.captured` event, choose
+   a secret, and put it in `RAZORPAY_WEBHOOK_SECRET`. The webhook is a backup: reports
+   are normally unlocked as soon as the browser reports a successful payment and the
+   server verifies the signature.
+3. Price and currency come from `PRO_REPORT_PRICE_CENTS` and `PRO_REPORT_CURRENCY`
+   (default 79900 + inr, shown as ₹799).
 
-The success URL also verifies the Checkout session directly with Stripe, so reports
-unlock even if the webhook is late or not yet configured.
+Flow: `POST /api/checkout` creates a Razorpay order and a pending Payment row → the
+browser opens Razorpay Checkout → on success it calls `POST /api/checkout/verify`
+with the order id, payment id and signature → the server checks the HMAC, confirms
+the payment with Razorpay's API, and flips the report to `pro`.
 
 ## Production notes
 
@@ -112,7 +117,7 @@ src/lib/instagram/         parser + analyzer (pure TypeScript, runs in browser a
   __tests__/               synthetic export fixture and tests
 src/lib/client/            browser ZIP reader, localStorage report registry
 src/workers/               analysis Web Worker
-src/lib/server/            env, Prisma client, Stripe, report persistence, checkout
+src/lib/server/            env, Prisma client, Razorpay, report persistence
 src/app/                   pages and API routes
 src/components/            charts, report sections, uploader, unlock button
 prisma/                    schema and migrations

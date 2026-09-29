@@ -10,8 +10,9 @@ const num = (v: string | undefined, fallback: number) => {
 
 export const env = {
   appUrl: (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, ""),
-  stripeSecretKey: process.env.STRIPE_SECRET_KEY,
-  stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+  razorpayKeyId: process.env.RAZORPAY_KEY_ID,
+  razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET,
+  razorpayWebhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET,
   /** Price of the full report in the smallest currency unit. */
   proPriceCents: num(process.env.PRO_REPORT_PRICE_CENTS, 79900),
   proCurrency: (process.env.PRO_REPORT_CURRENCY ?? "inr").toLowerCase(),
@@ -19,8 +20,8 @@ export const env = {
   maxReportBytes: num(process.env.MAX_REPORT_BYTES, 25 * 1024 * 1024),
   /** Allows unlocking reports without paying. Never enable in production. */
   allowDevUnlock: process.env.ALLOW_DEV_UNLOCK === "true" && process.env.NODE_ENV !== "production",
-  get stripeConfigured() {
-    return Boolean(this.stripeSecretKey);
+  get paymentsConfigured() {
+    return Boolean(this.razorpayKeyId && this.razorpayKeySecret);
   },
 };
 

@@ -39,8 +39,12 @@ model Payment {
   createdAt             DateTime @default(now())
   reportId              String
   report                Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
-  stripeSessionId       String   @unique
-  stripePaymentIntentId String?
+  /// Payment provider, currently "razorpay" (or "dev" for development unlocks).
+  provider              String   @default("razorpay")
+  /// Provider-side order id (Razorpay order_id). One order per unlock attempt.
+  providerOrderId       String   @unique
+  /// Provider-side payment id once the payment succeeds.
+  providerPaymentId     String?
   /// Amount in the smallest currency unit (cents).
   amount                Int
   currency              String

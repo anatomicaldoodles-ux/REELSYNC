@@ -22,7 +22,7 @@ export default function PricingPage() {
         </div>
       </div>
       <p className="mt-8 text-sm text-muted">
-        Payments are handled by Stripe. Refunds within 14 days if the report did not work for your export: reply to your receipt email.
+        Payments are handled by Razorpay (UPI, cards, net banking and wallets). Refunds within 14 days if the report did not work for your export: reply to your receipt email.
       </p>
       <Link href="/analyze" className="inline-block mt-6 brand-gradient text-white font-semibold px-5 py-3 rounded-xl">
         Start with the free preview
