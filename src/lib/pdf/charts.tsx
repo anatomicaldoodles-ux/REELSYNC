@@ -8,8 +8,8 @@ export const BLUE = "#2a78d6";
 export const BRAND = "#dd2a7b";
 
 export function compact(n: number): string {
-  if (Math.abs(n) >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (Math.abs(n) >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  if (Math.abs(n) >= 999_950) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (Math.abs(n) >= 999.5) return `${(n / 1_000).toFixed(1)}K`;
   return String(Math.round(n));
 }
 

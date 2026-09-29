@@ -19,8 +19,9 @@ per analysed account.
    the report `pro`. A webhook acts as backup.
 6. Unlocked reports can be downloaded as a PDF (`GET /api/reports/[id]/pdf`),
    rendered server-side with `@react-pdf/renderer` from the stored report. The
-   bundled DejaVu Sans font (`assets/fonts`) covers Latin, Greek and Cyrillic;
-   emoji are stripped from PDF text.
+   bundled fonts (`assets/fonts`) are DejaVu Sans for Latin, Greek and Cyrillic
+   and Noto Sans Devanagari for Hindi, Marathi and Nepali; text runs switch font
+   automatically. Emoji are stripped from PDF text.
 
 ### Free vs pro
 
