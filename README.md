@@ -91,6 +91,26 @@ npm run build
 3. Price and currency come from `PRO_REPORT_PRICE_CENTS` and `PRO_REPORT_CURRENCY`
    (default 79900 + inr, shown as ₹799).
 
+## Deploying (Railway, SQLite on a volume)
+
+The simplest public setup: one Railway service built from this repo, with a
+persistent volume for the SQLite file. No separate database to manage.
+
+1. Push to GitHub (already done) and create a Railway project from the repo.
+2. Add a **Volume** to the service, mounted at `/data`.
+3. Set variables: `DATABASE_URL=file:/data/reelsync.db`,
+   `NEXT_PUBLIC_APP_URL=https://<your-domain>`, `APIFY_TOKEN`, `RAZORPAY_KEY_ID`,
+   `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `IP_HASH_SALT=<random>`,
+   `PRO_REPORT_PRICE_CENTS=79900`, `PRO_REPORT_CURRENCY=inr`. Do not set
+   `ALLOW_DEV_UNLOCK`.
+4. `npm start` runs `prisma migrate deploy` before `next start`, so the schema is
+   applied on every deploy.
+5. Add your domain under Settings → Networking and point a CNAME at it.
+6. In Razorpay, add a webhook for `https://<your-domain>/api/razorpay/webhook`.
+
+Moving to Postgres later is a schema `provider` change plus `@prisma/adapter-pg`
+(see below); the app code does not change.
+
 ## Production notes
 
 - **Database:** switch `provider` in `prisma/schema.prisma` to `postgresql`, install
