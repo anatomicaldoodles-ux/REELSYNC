@@ -57,28 +57,44 @@ export async function getReportTier(id: string) {
   return prisma.report.findUnique({ where: { id }, select: { id: true, tier: true, username: true } });
 }
 
+export async function createPendingPayment(params: {
+  reportId: string;
+  provider: string;
+  providerOrderId: string;
+  amount: number;
+  currency: string;
+}) {
+  return prisma.payment.create({ data: { ...params, status: "pending" } });
+}
+
+export async function getPaymentByOrder(providerOrderId: string) {
+  return prisma.payment.findUnique({ where: { providerOrderId } });
+}
+
 export async function markReportPaid(params: {
   reportId: string;
-  stripeSessionId: string;
-  paymentIntentId?: string | null;
+  provider: string;
+  providerOrderId: string;
+  providerPaymentId?: string | null;
   amount: number;
   currency: string;
   email?: string | null;
 }) {
-  const { reportId, stripeSessionId, paymentIntentId, amount, currency, email } = params;
+  const { reportId, provider, providerOrderId, providerPaymentId, amount, currency, email } = params;
   await prisma.$transaction([
     prisma.payment.upsert({
-      where: { stripeSessionId },
+      where: { providerOrderId },
       create: {
         reportId,
-        stripeSessionId,
-        stripePaymentIntentId: paymentIntentId ?? null,
+        provider,
+        providerOrderId,
+        providerPaymentId: providerPaymentId ?? null,
         amount,
         currency,
         status: "paid",
         email: email ?? null,
       },
-      update: { status: "paid", stripePaymentIntentId: paymentIntentId ?? null, email: email ?? null },
+      update: { status: "paid", providerPaymentId: providerPaymentId ?? null, email: email ?? undefined },
     }),
     prisma.report.update({
       where: { id: reportId },

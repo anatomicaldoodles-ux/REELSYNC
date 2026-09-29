@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { confirmCheckoutSession } from "@/lib/server/checkout";
 import { env, formatPrice } from "@/lib/server/env";
 import { getGatedReport } from "@/lib/server/reports";
 import { fmtNumber } from "@/lib/format";
@@ -42,13 +41,8 @@ const NAV_PRO = [
   ["security", "Security"],
 ];
 
-export default async function ReportPage({ params, searchParams }: PageProps<"/report/[id]">) {
+export default async function ReportPage({ params }: PageProps<"/report/[id]">) {
   const { id } = await params;
-  const query = await searchParams;
-  const sessionId = typeof query.session_id === "string" ? query.session_id : undefined;
-  let justUnlocked = false;
-  if (sessionId) justUnlocked = await confirmCheckoutSession(sessionId, id);
-
   const report = await getGatedReport(id);
   if (!report) notFound();
   const { free, pro, timeZone } = report;
@@ -74,13 +68,11 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
         </div>
       </div>
 
-      {justUnlocked && (
-        <div className="mt-6 card p-4 border-good text-sm">
-          Payment received. Your full report is unlocked. Bookmark this page:{" "}
-          <span className="font-medium">{env.appUrl}/report/{id}</span>
+      {report.tier === "pro" && (
+        <div className="mt-6 card p-4 text-sm text-muted">
+          Your full report is unlocked. Bookmark this page to come back to it: <span className="font-medium text-foreground">{env.appUrl}/report/{id}</span>
         </div>
       )}
-      {query.checkout === "cancelled" && <div className="mt-6 card p-4 text-sm text-muted">Checkout cancelled. Your free report is still here.</div>}
 
       <nav className="mt-8 flex gap-2 overflow-x-auto text-sm pb-2 -mx-4 px-4">
         {[...NAV_FREE, ...NAV_PRO].map(([href, label]) => (
@@ -185,7 +177,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
             available at this link. Want to analyse a newer export later? That is a new report.
           </p>
           <div className="mt-5">
-            <UnlockButton reportId={id} price={formatPrice()} paymentsConfigured={env.stripeConfigured} devUnlock={env.allowDevUnlock} />
+            <UnlockButton reportId={id} price={formatPrice()} paymentsConfigured={env.paymentsConfigured} devUnlock={env.allowDevUnlock} />
           </div>
         </div>
       )}

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { formatPrice } from "@/lib/server/env";
+import { formatFree, formatPrice } from "@/lib/server/env";
 
 export const metadata: Metadata = { title: "Pricing" };
 
@@ -12,7 +12,7 @@ export default function PricingPage() {
       <div className="mt-8 grid sm:grid-cols-2 gap-6">
         <div className="card p-6">
           <div className="font-semibold">Free preview</div>
-          <div className="text-3xl font-semibold mt-1">$0</div>
+          <div className="text-3xl font-semibold mt-1">{formatFree()}</div>
           <p className="text-sm text-muted mt-3">Overview, follower counts with a preview of who doesn&apos;t follow back, activity by year, and your top 3 accounts.</p>
         </div>
         <div className="card p-6 border-2" style={{ borderColor: "var(--brand-b)" }}>
@@ -22,7 +22,7 @@ export default function PricingPage() {
         </div>
       </div>
       <p className="mt-8 text-sm text-muted">
-        Payments are handled by Stripe. Refunds within 14 days if the report did not work for your export: reply to your receipt email.
+        Payments are handled by Razorpay (UPI, cards, net banking and wallets). Refunds within 14 days if the report did not work for your export: reply to your receipt email.
       </p>
       <Link href="/analyze" className="inline-block mt-6 brand-gradient text-white font-semibold px-5 py-3 rounded-xl">
         Start with the free preview

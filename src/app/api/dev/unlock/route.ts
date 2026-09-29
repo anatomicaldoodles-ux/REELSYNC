@@ -14,7 +14,8 @@ export async function POST(request: Request) {
   if (!report) return NextResponse.json({ error: "Not found" }, { status: 404 });
   await markReportPaid({
     reportId: report.id,
-    stripeSessionId: `dev_${report.id}`,
+    provider: "dev",
+    providerOrderId: `dev_${report.id}`,
     amount: 0,
     currency: env.proCurrency,
   });

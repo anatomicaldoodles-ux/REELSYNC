@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatPrice } from "@/lib/server/env";
+import { formatFree, formatPrice } from "@/lib/server/env";
 
 const FREE = [
   "Followers, following and follow-back ratio",
@@ -67,7 +67,7 @@ export default function HomePage() {
         <div className="mt-6 grid md:grid-cols-2 gap-6">
           <div className="card p-6">
             <div className="text-sm font-semibold">Free</div>
-            <div className="text-3xl font-semibold mt-1">$0</div>
+            <div className="text-3xl font-semibold mt-1">{formatFree()}</div>
             <ul className="mt-4 space-y-2 text-sm text-muted">
               {FREE.map((f) => (
                 <li key={f} className="flex gap-2">

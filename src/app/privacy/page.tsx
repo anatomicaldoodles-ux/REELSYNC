@@ -21,8 +21,8 @@ export default function PrivacyPage() {
       </p>
       <H2>Payments</H2>
       <p>
-        Payments are processed by Stripe. We receive the payment status and the email address you enter at checkout, which
-        we attach to the report for receipts and support. We never see your card details.
+        Payments are processed by Razorpay. We receive the payment status and the email address or phone number you enter
+        at checkout, which we attach to the report for receipts and support. We never see your card or bank details.
       </p>
       <H2>Deletion</H2>
       <p>
