@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #f9f9f7;
+  --surface: #ffffff;
+  --foreground: #0b0b0b;
+  --muted: #52514e;
+  --faint: #898781;
+  --line: #e1e0d9;
+  --accent: #2a78d6;
+  --accent-strong: #1c5cab;
+  --brand-a: #f58529;
+  --brand-b: #dd2a7b;
+  --brand-c: #8134af;
+  --viz-1: #2a78d6;
+  --viz-2: #eb6834;
+  --viz-seq-100: #cde2fb;
+  --viz-seq-300: #6da7ec;
+  --viz-seq-500: #256abf;
+  --viz-seq-700: #0d366b;
+  --good: #006300;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0d0d0d;
+    --surface: #1a1a19;
+    --foreground: #ffffff;
+    --muted: #c3c2b7;
+    --faint: #898781;
+    --line: #2c2c2a;
+    --accent: #3987e5;
+    --accent-strong: #6da7ec;
+    --viz-1: #3987e5;
+    --viz-2: #d95926;
+    --viz-seq-100: #184f95;
+    --viz-seq-300: #256abf;
+    --viz-seq-500: #5598e7;
+    --viz-seq-700: #b7d3f6;
+    --good: #0ca30c;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-good: var(--good);
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+}
+
+html {
+  color-scheme: light dark;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.brand-gradient {
+  background-image: linear-gradient(90deg, var(--brand-a), var(--brand-b), var(--brand-c));
+}
+
+.brand-text {
+  background-image: linear-gradient(90deg, var(--brand-a), var(--brand-b), var(--brand-c));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
