@@ -9,9 +9,6 @@ export function SiteHeader() {
           ReelSync
         </Link>
         <nav className="flex items-center gap-1 text-sm">
-          <Link href="/how-to-export" className="px-3 py-1.5 rounded-md hover:bg-background text-muted hover:text-foreground">
-            How to export
-          </Link>
           <Link href="/pricing" className="px-3 py-1.5 rounded-md hover:bg-background text-muted hover:text-foreground">
             Pricing
           </Link>

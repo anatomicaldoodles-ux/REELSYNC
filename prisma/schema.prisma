@@ -10,20 +10,26 @@ datasource db {
   provider = "sqlite"
 }
 
-/// One analysed Instagram export. Raw export data is never stored: only the
-/// computed report JSON. Free reports get the pro sections stripped at read time.
+/// One analysis of a public Instagram profile. Free reports get the pro
+/// sections stripped at read time.
 model Report {
   id          String    @id @default(cuid())
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  /// Instagram username the export belongs to (from the export itself).
+  /// Instagram username that was analysed (lower-case).
   username    String?
+  /// Data provider that fetched the profile ("apify", "demo").
+  provider    String    @default("demo")
+  /// The snapshot this report was computed from.
+  snapshotId  String?
+  /// Hashed client IP, for per-day lookup limits.
+  ipHash      String?
   /// "free" until a successful payment flips it to "pro".
   tier        String    @default("free")
   paidAt      DateTime?
   /// Email captured from Stripe Checkout, used for receipts / report recovery.
   email       String?
-  /// Full AnalysisReport JSON (all sections, free and pro).
+  /// Full ProfileReport JSON (all sections, free and pro).
   data        String
   /// Analyzer version that produced `data`, for future re-rendering decisions.
   analyzerVersion String
@@ -32,6 +38,23 @@ model Report {
   payments    Payment[]
 
   @@index([createdAt])
+  @@index([ipHash, createdAt])
+}
+
+/// A fetched copy of a public profile. Serves as a short-lived cache and as
+/// follower-history for growth charts.
+model ProfileSnapshot {
+  id         String   @id @default(cuid())
+  username   String
+  fetchedAt  DateTime @default(now())
+  provider   String
+  followers  Int
+  following  Int
+  postsCount Int
+  /// Full PublicProfile JSON including recent posts.
+  data       String
+
+  @@index([username, fetchedAt])
 }
 
 model Payment {

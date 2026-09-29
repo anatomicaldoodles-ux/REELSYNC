@@ -6,7 +6,7 @@ export default function ReportNotFound() {
       <h1 className="text-2xl font-semibold">Report not found</h1>
       <p className="mt-2 text-muted">It may have been deleted, or the link is incomplete.</p>
       <Link href="/analyze" className="inline-block mt-6 brand-gradient text-white font-semibold px-5 py-3 rounded-xl">
-        Analyse an export
+        Analyse an account
       </Link>
     </div>
   );

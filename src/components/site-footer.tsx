@@ -5,8 +5,8 @@ export function SiteFooter() {
     <footer className="border-t border-line mt-16">
       <div className="mx-auto max-w-6xl px-4 py-8 text-sm text-muted flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
         <p>
-          ReelSync is an independent tool and is not affiliated with Instagram or Meta. Your export is analysed in your
-          browser.
+          ReelSync is an independent tool and is not affiliated with Instagram or Meta. It analyses publicly visible
+          profile data only.
         </p>
         <nav className="flex gap-4">
           <Link href="/privacy" className="hover:text-foreground">
